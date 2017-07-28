@@ -296,23 +296,35 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Time.every speed Tick
-        , Keyboard.presses (\code -> Presses (codeToCommand code))
+        , Keyboard.downs (\code -> Presses (codeToCommand code))
         ]
 
 
 codeToCommand : Int -> Command
 codeToCommand code =
     case code of
-        97 ->
+        65 ->
             LEFT
 
-        119 ->
+        37 ->
+            LEFT
+
+        87 ->
             UP
 
-        100 ->
+        38 ->
+            UP
+
+        68 ->
             RIGHT
 
-        115 ->
+        39 ->
+            RIGHT
+
+        83 ->
+            DOWN
+
+        40 ->
             DOWN
 
         32 ->
