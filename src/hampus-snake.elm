@@ -32,7 +32,7 @@ speed =
 
 type alias Model =
     { now : Time
-    , score : Int
+    , age : Int
     , gameState : GameState
     , snake : Snake
     , apple : Coord
@@ -98,7 +98,7 @@ initialApple =
 
 
 initialModel =
-    { now = 0, score = 0, gameState = RUN, snake = initialSnake, apple = initialApple }
+    { now = 0, age = 0, gameState = RUN, snake = initialSnake, apple = initialApple }
 
 
 init : ( Model, Cmd Msg )
@@ -169,21 +169,21 @@ updateSnake : Model -> Snake
 updateSnake model =
     case model.snake.direction of
         NORTH ->
-            moveSnake 0 -4 model.snake model.score
+            moveSnake 0 -4 model.snake model.age
 
         SOUTH ->
-            moveSnake 0 4 model.snake model.score
+            moveSnake 0 4 model.snake model.age
 
         WEST ->
-            moveSnake -4 0 model.snake model.score
+            moveSnake -4 0 model.snake model.age
 
         EAST ->
-            moveSnake 4 0 model.snake model.score
+            moveSnake 4 0 model.snake model.age
 
 
 moveSnake : Int -> Int -> Snake -> Int -> Snake
-moveSnake updateX updateY snake score =
-    { snake | head = moveHead snake.head updateX updateY, tail = moveTail snake.head snake.tail score }
+moveSnake updateX updateY snake age =
+    { snake | head = moveHead snake.head updateX updateY, tail = moveTail snake.head snake.tail age }
 
 
 moveHead : Coord -> Int -> Int -> Coord
@@ -192,24 +192,24 @@ moveHead head updateX updateY =
 
 
 moveTail : Coord -> List Coord -> Int -> List Coord
-moveTail head tail score =
-    head :: List.take (tailLengthFromScore score) tail
+moveTail head tail age =
+    head :: List.take (tailLengthFromScore age) tail
 
 
 tailLengthFromScore : Int -> Int
-tailLengthFromScore score =
-    if score < 5 then
-        score
-    else if score < 10 then
-        score + 5
-    else if score < 15 then
-        score + 10
-    else if score < 20 then
-        score + 15
-    else if score < 25 then
-        score + 20
+tailLengthFromScore age =
+    if age < 5 then
+        age
+    else if age < 10 then
+        age + 5
+    else if age < 15 then
+        age + 10
+    else if age < 20 then
+        age + 15
+    else if age < 25 then
+        age + 20
     else
-        score + 25
+        age + 25
 
 
 updateGameState : Model -> GameState
@@ -236,10 +236,10 @@ hittingSelf model =
 
 eatApple : Model -> ( Model, Cmd Msg )
 eatApple model =
-    if model.score >= 29 then
-        ( { model | gameState = WON, score = 30 }, Cmd.none )
+    if model.age >= 29 then
+        ( { model | gameState = WON, age = 30 }, Cmd.none )
     else
-        ( { model | gameState = EAT, score = model.score + 1 }
+        ( { model | gameState = EAT, age = model.age + 1 }
         , Random.generate NewApple randomPoint
         )
 
@@ -341,8 +341,8 @@ view model =
             [ text (toString (Date.fromTime model.now))
             , text " Game state: "
             , text (toString model.gameState)
-            , text " Score: "
-            , text (toString model.score)
+            , text " Age: "
+            , text (toString model.age)
             ]
         ]
 
@@ -366,7 +366,7 @@ background model =
     , text_ [ x "30", y "75", fontFamily "Verdana", fontSize "7", fill "black" ]
         [ text
             ("Age: "
-                ++ toString model.score
+                ++ toString model.age
             )
         ]
     ]
