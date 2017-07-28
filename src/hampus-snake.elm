@@ -413,7 +413,7 @@ headView snake =
         translate =
             "translate(" ++ toString x ++ "," ++ toString y ++ ")"
     in
-    [ image [ xlinkHref (imageBasedOnDirection snake.direction), width (toString size), transform translate ] []
+    [ image [ xlinkHref (imageBasedOnDirection snake.direction), width (toString size), height (toString size), transform translate ] []
     ]
 
 
