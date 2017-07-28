@@ -1,0 +1,19 @@
+.quotebox {
+    background-color: lightgray;
+    border: 1px solid darkgray;
+    max-width: 200px;
+}
+
+.container {
+    max-width: 1024px;
+}
+
+.header {
+    max-width: inherit;
+    border-bottom: solid 1px;
+}
+
+img {
+    height: 100%;
+    width: 100%;
+}
