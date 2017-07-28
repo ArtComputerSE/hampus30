@@ -12,6 +12,7 @@ import Svg.Attributes exposing (..)
 import Task
 import Time exposing (Time, millisecond)
 
+
 main =
     Html.program
         { init = init
@@ -349,7 +350,7 @@ view model =
         [ svg [ viewBox "0 0 100 100", width "500px" ]
             (gameView model)
         , div []
-            [ text (clockView model )
+            [ text (clockView model)
             , text " Game state: "
             , text (toString model.gameState)
             , text " Age: "
@@ -364,13 +365,24 @@ gameView model =
         ++ appleView model.apple
         ++ snakeView model.snake
 
+
 clockView : Model -> String
 clockView model =
     let
-        now = Date.fromTime model.now
+        now =
+            Date.fromTime model.now
     in
-    (toString (Date.year now)) ++ "-" ++ (toString(Date.month now)) ++ "-" ++ (toString(Date.day now)  ++ " "
-    ++ (toString (Date.hour now)) ++ ":" ++ (toString (Date.minute now)) )
+    toString (Date.year now)
+        ++ "-"
+        ++ toString (Date.month now)
+        ++ "-"
+        ++ (toString (Date.day now)
+                ++ " "
+                ++ toString (Date.hour now)
+                ++ ":"
+                ++ toString (Date.minute now)
+           )
+
 
 background : Model -> List (Svg Msg)
 background model =
@@ -425,7 +437,13 @@ headView snake =
         translate =
             "translate(" ++ toString x ++ "," ++ toString y ++ ")"
     in
-    [ image [ xlinkHref (imageBasedOnDirection snake.direction), width (toString size), height (toString size), transform translate ] []
+    [ image
+        [ xlinkHref (imageBasedOnDirection snake.direction)
+        , width (toString size)
+        , height (toString size)
+        , transform translate
+        ]
+        []
     ]
 
 
@@ -457,5 +475,12 @@ tailPart coord =
 
 appleView : Coord -> List (Svg Msg)
 appleView coord =
-    [ circle [ cx (toString coord.x), cy (toString coord.y), r "2", fill "red" ] []
+    [ image
+        [ xlinkHref "image/apple.png"
+        , x (toString (coord.x - 6))
+        , y (toString (coord.y - 6))
+        , width "12"
+        , height "12"
+        ]
+        []
     ]
