@@ -1,15 +1,22 @@
+
+.commandBox {
+    float: right;
+    width: 50%;
+}
+
 .commandRow {
     background-color: lightgray;
     border: 1px solid darkgray;
     width: 100%;
     display: flex;
     align-items: center;
+    margin-top: 3em;
 }
 
 .commandButton {
     width: 100%;
-    font-size: 2em;
-    margin: 1em;
+    font-size: 3em;
+    margin: 0;
 }
 
 .container {

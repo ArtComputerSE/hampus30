@@ -357,9 +357,9 @@ view model =
             , ( "border", "solid 1px" )
             ]
         ]
-        [ svg [ viewBox "0 0 100 100", width "500px" ]
+        [ svg [ viewBox "0 0 100 100", width "50%" ]
             (gameView model)
-        , div []
+        , div [ class "commandBox" ]
             [ div [ class "commandRow" ]
                 [ button [ onClick (Button START), class "commandButton" ] [ text "SPACE" ] ]
             , div [ class "commandRow" ]
