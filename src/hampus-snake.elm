@@ -12,7 +12,6 @@ import Svg.Attributes exposing (..)
 import Task
 import Time exposing (Time, millisecond)
 
-
 main =
     Html.program
         { init = init
@@ -338,7 +337,7 @@ view model =
         [ svg [ viewBox "0 0 100 100", width "500px" ]
             (gameView model)
         , div []
-            [ text (toString (Date.fromTime model.now))
+            [ text (clockView model )
             , text " Game state: "
             , text (toString model.gameState)
             , text " Age: "
@@ -353,6 +352,13 @@ gameView model =
         ++ appleView model.apple
         ++ snakeView model.snake
 
+clockView : Model -> String
+clockView model =
+    let
+        now = Date.fromTime model.now
+    in
+    (toString (Date.year now)) ++ "-" ++ (toString(Date.month now)) ++ "-" ++ (toString(Date.day now)  ++ " "
+    ++ (toString (Date.hour now)) ++ ":" ++ (toString (Date.minute now)) )
 
 background : Model -> List (Svg Msg)
 background model =
