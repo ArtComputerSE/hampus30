@@ -303,7 +303,7 @@ subscriptions model =
 
 codeToCommand : Int -> Command
 codeToCommand code =
-    case Debug.log "Code " code of
+    case code of
         97 ->
             LEFT
 
