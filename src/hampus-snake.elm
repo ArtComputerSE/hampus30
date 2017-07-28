@@ -3,8 +3,9 @@ module Hampus exposing (..)
 import Char exposing (..)
 import Date
 import Debug
-import Html exposing (Html, div)
+import Html exposing (Html, button, div)
 import Html.Attributes
+import Html.Events exposing (onClick)
 import Keyboard exposing (..)
 import Random
 import Svg exposing (..)
@@ -113,6 +114,7 @@ init =
 type Msg
     = Tick Time
     | Presses Command
+    | Button Command
     | EatApple
     | NewApple ( Int, Int )
 
@@ -124,6 +126,9 @@ update msg model =
             updateGame model newTime
 
         Presses command ->
+            updateDirection model command
+
+        Button command ->
             updateDirection model command
 
         EatApple ->
@@ -273,7 +278,12 @@ updateDirection model command =
             newDirection model SOUTH
 
         START ->
-            ( initialModel, Cmd.none )
+            ( if model.gameState == END then
+                initialModel
+              else
+                model
+            , Cmd.none
+            )
 
         NONE ->
             ( model, Cmd.none )
@@ -350,6 +360,18 @@ view model =
         [ svg [ viewBox "0 0 100 100", width "500px" ]
             (gameView model)
         , div []
+            [ div [ class "commandRow" ]
+                [ button [ onClick (Button START), class "commandButton" ] [ text "SPACE" ] ]
+            , div [ class "commandRow" ]
+                [ button [ onClick (Button UP), class "commandButton" ] [ text "UP" ] ]
+            , div [ class "commandRow" ]
+                [ button [ onClick (Button LEFT), class "commandButton" ] [ text "LEFT" ]
+                , button [ onClick (Button RIGHT), class "commandButton" ] [ text "RIGHT" ]
+                ]
+            , div [ class "commandRow" ]
+                [ button [ onClick (Button DOWN), class "commandButton" ] [ text "DOWN" ] ]
+            ]
+        , div []
             [ text (clockView model)
             , text " Game state: "
             , text (toString model.gameState)
@@ -414,7 +436,7 @@ messageBasedOnState model =
             "Congratulations!"
 
         END ->
-            "Press space. Then WASD!"
+            "Press space to restart!"
 
 
 snakeView : Snake -> List (Svg Msg)

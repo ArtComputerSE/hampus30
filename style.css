@@ -1,7 +1,15 @@
-.quotebox {
+.commandRow {
     background-color: lightgray;
     border: 1px solid darkgray;
-    max-width: 200px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.commandButton {
+    width: 100%;
+    font-size: 2em;
+    margin: 1em;
 }
 
 .container {
