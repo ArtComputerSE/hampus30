@@ -193,11 +193,11 @@ moveHead head updateX updateY =
 
 moveTail : Coord -> List Coord -> Int -> List Coord
 moveTail head tail age =
-    head :: List.take (tailLengthFromScore age) tail
+    head :: List.take (tailLengthFromAge age) tail
 
 
-tailLengthFromScore : Int -> Int
-tailLengthFromScore age =
+tailLengthFromAge : Int -> Int
+tailLengthFromAge age =
     if age < 5 then
         age
     else if age < 10 then
