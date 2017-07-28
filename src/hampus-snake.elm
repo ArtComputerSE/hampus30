@@ -350,7 +350,6 @@ view model =
 gameView : Model -> List (Svg Msg)
 gameView model =
     background model
-        ++ directionArrow model
         ++ appleView model.apple
         ++ snakeView model.snake
 
@@ -386,40 +385,6 @@ messageBasedOnState model =
 
         END ->
             "Press space. Then WASD!"
-
-
-directionArrow : Model -> List (Svg Msg)
-directionArrow model =
-    let
-        rotation =
-            case model.snake.direction of
-                NORTH ->
-                    270
-
-                SOUTH ->
-                    90
-
-                WEST ->
-                    180
-
-                EAST ->
-                    0
-
-        rotate =
-            "rotate(" ++ toString rotation ++ ", 50, 50)"
-    in
-    [ g [ stroke "black", transform rotate ]
-        [ line
-            [ x1 "50", y1 "50", x2 "60", y2 "50" ]
-            []
-        , line
-            [ x1 "50", y1 "50", x2 "40", y2 "45" ]
-            []
-        , line
-            [ x1 "50", y1 "50", x2 "40", y2 "55" ]
-            []
-        ]
-    ]
 
 
 snakeView : Snake -> List (Svg Msg)
