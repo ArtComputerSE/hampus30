@@ -1,21 +1,20 @@
-module Hampus exposing (..)
+module Main exposing (main)
 
-import Char exposing (..)
-import Date
-import Debug
+import Browser
 import Html exposing (Html, button, div)
 import Html.Attributes
 import Html.Events exposing (onClick)
-import Keyboard exposing (..)
+import Keyboard exposing (Key(..))
 import Random
+import String
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Task
-import Time exposing (Time, millisecond)
+import Time
 
 
 main =
-    Html.program
+    Browser.element
         { init = init
         , view = view
         , update = update
@@ -27,16 +26,13 @@ speed =
     200
 
 
-
--- MODEL
-
-
 type alias Model =
-    { now : Time
+    { now : Time.Posix
     , age : Int
     , gameState : GameState
     , snake : Snake
     , apple : Coord
+    , pressedKeys : List Key
     }
 
 
@@ -98,22 +94,25 @@ initialApple =
     }
 
 
+initialModel : Model
 initialModel =
-    { now = 0, age = 0, gameState = RUN, snake = initialSnake, apple = initialApple }
+    { now = Time.millisToPosix 0
+    , age = 0
+    , gameState = RUN
+    , snake = initialSnake
+    , apple = initialApple
+    , pressedKeys = []
+    }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( initialModel, Cmd.none )
 
 
-
--- UPDATE
-
-
 type Msg
-    = Tick Time
-    | Presses Command
+    = Tick Time.Posix
+    | KeyMsg Keyboard.Msg
     | Button Command
     | EatApple
     | NewApple ( Int, Int )
@@ -125,8 +124,8 @@ update msg model =
         Tick newTime ->
             updateGame model newTime
 
-        Presses command ->
-            updateDirection model command
+        KeyMsg keyMsg ->
+            updateOnKeyPress { model | pressedKeys = Keyboard.update keyMsg model.pressedKeys }
 
         Button command ->
             updateDirection model command
@@ -138,7 +137,7 @@ update msg model =
             newApple model (Coord (x * 4) (y * 4))
 
 
-updateGame : Model -> Time -> ( Model, Cmd Msg )
+updateGame : Model -> Time.Posix -> ( Model, Cmd Msg )
 updateGame model newTime =
     ( case model.gameState of
         RUN ->
@@ -160,6 +159,7 @@ nextCmd : Model -> Cmd Msg
 nextCmd model =
     if model.apple == model.snake.head then
         send EatApple
+
     else
         Cmd.none
 
@@ -205,14 +205,19 @@ tailLengthFromAge : Int -> Int
 tailLengthFromAge age =
     if age < 5 then
         age
+
     else if age < 10 then
         age + 5
+
     else if age < 15 then
         age + 10
+
     else if age < 20 then
         age + 15
+
     else if age < 25 then
         age + 20
+
     else
         age + 25
 
@@ -221,6 +226,7 @@ updateGameState : Model -> GameState
 updateGameState model =
     if withinBounds model && not (hittingSelf model) then
         RUN
+
     else
         END
 
@@ -243,6 +249,7 @@ eatApple : Model -> ( Model, Cmd Msg )
 eatApple model =
     if model.age >= 29 then
         ( { model | gameState = WON, age = 30 }, Cmd.none )
+
     else
         ( { model | gameState = EAT, age = model.age + 1 }
         , Random.generate NewApple randomPoint
@@ -253,6 +260,7 @@ newApple : Model -> Coord -> ( Model, Cmd Msg )
 newApple model coord =
     if (model.snake.head == coord) || List.member coord model.snake.tail then
         ( model, Random.generate NewApple randomPoint )
+
     else
         ( { model | apple = { x = coord.x, y = coord.y }, gameState = RUN }, Cmd.none )
 
@@ -280,6 +288,7 @@ updateDirection model command =
         START ->
             ( if model.gameState == END then
                 initialModel
+
               else
                 model
             , Cmd.none
@@ -289,14 +298,46 @@ updateDirection model command =
             ( model, Cmd.none )
 
 
+updateOnKeyPress : Model -> ( Model, Cmd Msg )
+updateOnKeyPress model =
+    let
+        key =
+            List.head model.pressedKeys |> Maybe.withDefault Keyboard.Backspace
+    in
+    case key of
+        ArrowLeft ->
+            newDirection model WEST
+
+        ArrowUp ->
+            newDirection model NORTH
+
+        ArrowRight ->
+            newDirection model EAST
+
+        ArrowDown ->
+            newDirection model SOUTH
+
+        Spacebar ->
+            ( if model.gameState == END then
+                initialModel
+
+              else
+                model
+            , Cmd.none
+            )
+
+        _ ->
+            ( model, Cmd.none )
+
+
 newDirection : Model -> Direction -> ( Model, Cmd Msg )
-newDirection model newDirection =
-    ( { model | snake = newSnakeDirection model.snake newDirection }, Cmd.none )
+newDirection model dir =
+    ( { model | snake = newSnakeDirection model.snake dir }, Cmd.none )
 
 
 newSnakeDirection : Snake -> Direction -> Snake
-newSnakeDirection snake newDirection =
-    { snake | direction = newDirection }
+newSnakeDirection snake dir =
+    { snake | direction = dir }
 
 
 
@@ -304,58 +345,18 @@ newSnakeDirection snake newDirection =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
         [ Time.every speed Tick
-        , Keyboard.downs (\code -> Presses (codeToCommand code))
+        , Sub.map KeyMsg Keyboard.subscriptions
         ]
-
-
-codeToCommand : Int -> Command
-codeToCommand code =
-    case code of
-        65 ->
-            LEFT
-
-        37 ->
-            LEFT
-
-        87 ->
-            UP
-
-        38 ->
-            UP
-
-        68 ->
-            RIGHT
-
-        39 ->
-            RIGHT
-
-        83 ->
-            DOWN
-
-        40 ->
-            DOWN
-
-        32 ->
-            START
-
-        _ ->
-            NONE
-
-
-
--- VIEW
 
 
 view : Model -> Html Msg
 view model =
     div
-        [ Html.Attributes.style
-            [ ( "padding", "10px" )
-            , ( "border", "solid 1px" )
-            ]
+        [ Html.Attributes.style "padding" "10px"
+        , Html.Attributes.style "border" "solid 1px"
         ]
         [ svg [ viewBox "0 0 100 100", width "50%" ]
             (gameView model)
@@ -373,10 +374,8 @@ view model =
             ]
         , div []
             [ text (clockView model)
-            , text " Game state: "
-            , text (toString model.gameState)
             , text " Age: "
-            , text (toString model.age)
+            , text (String.fromInt model.age)
             ]
         ]
 
@@ -391,19 +390,12 @@ gameView model =
 clockView : Model -> String
 clockView model =
     let
-        now =
-            Date.fromTime model.now
+        z =
+            Time.utc
     in
-    toString (Date.year now)
-        ++ "-"
-        ++ toString (Date.month now)
-        ++ "-"
-        ++ (toString (Date.day now)
-                ++ " "
-                ++ toString (Date.hour now)
-                ++ ":"
-                ++ toString (Date.minute now)
-           )
+    String.fromInt (Time.toHour z model.now)
+        ++ ":"
+        ++ String.fromInt (Time.toMinute z model.now)
 
 
 background : Model -> List (Svg Msg)
@@ -415,10 +407,7 @@ background model =
             (messageBasedOnState model)
         ]
     , text_ [ x "30", y "75", fontFamily "Verdana", fontSize "7", fill "black" ]
-        [ text
-            ("Age: "
-                ++ toString model.age
-            )
+        [ text <| "Age: " ++ String.fromInt model.age
         ]
     ]
 
@@ -457,12 +446,12 @@ headView snake =
             snake.head.x - size // 2
 
         translate =
-            "translate(" ++ toString x ++ "," ++ toString y ++ ")"
+            "translate(" ++ String.fromInt x ++ "," ++ String.fromInt y ++ ")"
     in
     [ image
         [ xlinkHref (imageBasedOnDirection snake.direction)
-        , width (toString size)
-        , height (toString size)
+        , width (String.fromInt size)
+        , height (String.fromInt size)
         , transform translate
         ]
         []
@@ -492,15 +481,15 @@ tailView snake =
 
 tailPart : Coord -> Svg Msg
 tailPart coord =
-    circle [ cx (toString coord.x), cy (toString coord.y), r "2", fill "green" ] []
+    circle [ cx (String.fromInt coord.x), cy (String.fromInt coord.y), r "2", fill "green" ] []
 
 
 appleView : Coord -> List (Svg Msg)
 appleView coord =
     [ image
         [ xlinkHref "image/apple.png"
-        , x (toString (coord.x - 6))
-        , y (toString (coord.y - 6))
+        , x (String.fromInt (coord.x - 6))
+        , y (String.fromInt (coord.y - 6))
         , width "12"
         , height "12"
         ]
